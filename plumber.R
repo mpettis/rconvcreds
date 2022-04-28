@@ -204,3 +204,45 @@ function(unit){
 }
 
 
+
+
+#* Edit person
+#* @get /xkcd/edit
+#* @serializer html
+function(id){
+    #;; Read the people db, show the updated record
+    people_df <-
+        dbReadTable(con, "people") %>%
+        filter(id == .env$id)
+    
+    body_contents <-
+        c(
+            glue_data(people_df, editForm_tpl)
+        ) %>%
+        paste0(collapse="\n<br/>\n")
+    
+    glue(page_tpl)
+}
+
+#* Edit person, submitted data
+#* @get /xkcd/editSubmit
+#* @serializer html
+function(id, role, rank, unit, last_name, first_name, sex){
+    id <- as.integer(id)
+    rank <- ifelse(rank == "NA", "null", rank)
+    
+    dbExecute(con, glue("update people set role = '{role}', rank = {rank}, unit = '{unit}', last_name = '{last_name}', first_name = '{first_name}' where id = {id}"))
+
+    people_df <-
+        dbReadTable(con, "people") %>%
+        filter(id == .env$id)
+    body_contents <-
+        c(
+            dbToTableUpdate(people_df),
+            '<h1><a href="/xkcd">Return to Main Page</a></h1>'
+        ) %>%
+        paste0(collapse="\n<br/>\n")
+    
+    glue(page_tpl)
+}
+
