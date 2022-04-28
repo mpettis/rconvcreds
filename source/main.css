@@ -1,0 +1,25 @@
+table {
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid black;
+}
+
+.in-del {
+    background-color: lightgreen;
+}
+
+.in-alt {
+    background-color: yellow;
+}
+
+.up-alt {
+    background-color: greenyellow;
+}
+
+.out {
+    background-color: white;
+}
+
