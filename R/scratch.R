@@ -35,7 +35,9 @@ source(here::here("R", "libwebutils.R"))
 
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-id = 1
+df
+        dbReadTable(con, "people") %>%
+
 
 people_df <-
     dbReadTable(con, "people") %>%

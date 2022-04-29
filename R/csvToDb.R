@@ -80,7 +80,7 @@ dbPeople_df <-
     #;; Select and groom columns
     select(id, last_name, first_name, sex,
            address, city, zip,
-           unit, cd, sd=party_unit,
+           unit, cd, sd=party_unit, subcaucus,
            role, rank, is_superdelegate,
            is_checkedIn, is_upgraded)
 

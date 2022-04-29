@@ -19,5 +19,8 @@
   <label for="sex">Gender:</label><br>
   <input type="text" id="sex" name="sex" value="{sex}"><br>
 
+  <label for="subcaucus">Subcaucus:</label><br>
+  <input type="text" id="subcaucus" name="subcaucus" value="{subcaucus}"><br>
+
   <input type="submit" value="Submit">
 </form> 

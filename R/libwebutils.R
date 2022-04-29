@@ -195,3 +195,7 @@ dbToTableUpdate <- function(df) {
 
 
 
+#;; Calculate stats based on people record set
+getStats <- function(df) {
+    
+}

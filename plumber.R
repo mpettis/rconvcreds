@@ -37,7 +37,10 @@ function(){
         dbReadTable(con, "people")
     
     body_contents <-
-        dbToTableReadOnly(people_df)
+        c(
+            glue("<p>Dels ttl: {dels_ttl}, Dels In: {dels_in}, Alts Upgraded: {alts_up}, Alts Pending: {alts_pend}</p>"),
+            dbToTableReadOnly(people_df)
+        )
     
     glue(page_tpl)
 }
@@ -123,7 +126,7 @@ function(unit){
         peopleAlt_df %>%
         filter(is_checkedIn == 1 & is_upgraded == 0) %>%
         nrow()
-
+    
     body_contents <-
         c(
             glue("<h1>Unit: {unit}</h1>"),
@@ -227,12 +230,22 @@ function(id){
 #* Edit person, submitted data
 #* @get /xkcd/editSubmit
 #* @serializer html
-function(id, role, rank, unit, last_name, first_name, sex){
+function(id, role, rank, unit, last_name, first_name, sex, subcaucus){
     id <- as.integer(id)
     rank <- ifelse(rank == "NA", "null", rank)
+    if (!exists("subcaucus") || is.null(subcaucus) || subcaucus == "NA") {
+        subcaucus <- ""
+    }
     
-    dbExecute(con, glue("update people set role = '{role}', rank = {rank}, unit = '{unit}', last_name = '{last_name}', first_name = '{first_name}' where id = {id}"))
-
+    dbExecute(con, glue("update people set
+                        role = '{role}'
+                        , rank = {rank}
+                        , unit = '{unit}'
+                        , last_name = '{last_name}'
+                        , first_name = '{first_name}'
+                        , subcaucus = '{subcaucus}'
+                        where id = {id}"))
+    
     people_df <-
         dbReadTable(con, "people") %>%
         filter(id == .env$id)
@@ -246,3 +259,72 @@ function(id, role, rank, unit, last_name, first_name, sex){
     glue(page_tpl)
 }
 
+
+#* Add person
+#* @get /xkcd/add
+#* @serializer html
+function(){
+    body_contents <-
+        c(
+            addForm_tpl
+        ) %>%
+        paste0(collapse="\n<br/>\n")
+    
+    glue(page_tpl)
+}
+
+
+
+#* Add person, submitted data
+#* @get /xkcd/addSubmit
+#* @serializer html
+function(role, rank=NULL, unit, last_name, first_name, sex, subcaucus){
+    if (!exists("rank") || is.null(rank) || rank == "NA") {
+        rank <- "null"
+    }
+    if (!exists("sex") || is.null(sex) || sex == "NA") {
+        sex <- "other"
+    }
+    if (!exists("subcaucus") || is.null(subcaucus) || subcaucus == "NA") {
+        subcaucus <- ""
+    }
+    # glue("role: {role}")
+    # glue("rank: {rank}")
+
+    maxid <-
+        dbReadTable(con, "people") %>%
+        pull("id") %>%
+        max()
+    newid <- maxid + 1
+    
+    dbExecute(con, glue("insert into people
+                        (id
+                        , role
+                        , rank
+                        , unit
+                        , last_name
+                        , first_name
+                        , sex
+                        , subcaucus)
+                        values
+                        ({newid}
+                        , '{role}'
+                        , {rank}
+                        , '{unit}'
+                        , '{last_name}'
+                        , '{first_name}'
+                        , '{sex}'
+                        , '{subcaucus}')"))
+
+        people_df <-
+            dbReadTable(con, "people") %>%
+            filter(id == newid)
+        body_contents <-
+            c(
+                dbToTableUpdate(people_df),
+                '<h1><a href="/xkcd">Return to Main Page</a></h1>'
+            ) %>%
+            paste0(collapse="\n<br/>\n")
+
+        glue(page_tpl)
+}
