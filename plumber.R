@@ -37,10 +37,11 @@ function(){
         dbReadTable(con, "people")
     
     body_contents <-
-        c(
-            glue("<p>Dels ttl: {dels_ttl}, Dels In: {dels_in}, Alts Upgraded: {alts_up}, Alts Pending: {alts_pend}</p>"),
+        c("<h1>Main Report Page</h1>",
+          glue_data(getStats(people_df), tableSummary_tpl),
             dbToTableReadOnly(people_df)
-        )
+        ) %>%
+        paste0(collapse="\n<br/>\n")
     
     glue(page_tpl)
 }
@@ -55,8 +56,14 @@ function(){
     people_df <-
         dbReadTable(con, "people")
     
+    # body_contents <-
+    #     dbToTableUpdate(people_df)
     body_contents <-
-        dbToTableUpdate(people_df)
+        c("<h1>Main Checkin Page</h1>",
+          glue_data(getStats(people_df), tableSummary_tpl),
+          dbToTableUpdate(people_df)
+        ) %>%
+        paste0(collapse="\n<br/>\n")
     
     glue(page_tpl)
 }
@@ -97,7 +104,6 @@ function(id, status){
 #* @get /filterUnit
 #* @serializer html
 function(unit){
-    
     #;; Read the people db, show the updated record
     people_df <-
         dbReadTable(con, "people") %>%
@@ -112,25 +118,22 @@ function(unit){
         filter(role == "A") %>%
         arrange(rank, last_name, first_name)
     
-    
-    #;; Some computatations
-    dels_in <-
-        peopleDel_df %>%
-        filter(is_checkedIn == 1) %>%
-        nrow()
-    alts_up <-
-        peopleAlt_df %>%
-        filter(is_checkedIn == 1 & is_upgraded == 1) %>%
-        nrow()
-    alts_pend <-
-        peopleAlt_df %>%
-        filter(is_checkedIn == 1 & is_upgraded == 0) %>%
-        nrow()
-    
+    #;; Branch for DPL
+    if ("DPL" %in% unique(people_df$role)) {
+        peopleDel_df <-
+            people_df %>%
+            filter(role == "DPL") %>%
+            arrange(last_name, first_name)
+        
+        peopleAlt_df <-
+            peopleDel_df %>%
+            filter(FALSE)
+    }
+
     body_contents <-
         c(
             glue("<h1>Unit: {unit}</h1>"),
-            glue("<p>Dels ttl: {dels_ttl}, Dels In: {dels_in}, Alts Upgraded: {alts_up}, Alts Pending: {alts_pend}</p>"),
+            glue_data(getStats(people_df), tableSummary_tpl),
             glue("<h2>Delegates</h2>"),
             if (nrow(peopleDel_df)) {dbToTableReadOnly(peopleDel_df)} else {""},
             glue("<h2>Alternates</h2>"),
@@ -138,6 +141,7 @@ function(unit){
             '<h1><a href="/xkcd">Return to Main Page</a></h1>'
         ) %>%
         paste0(collapse="\n<br/>\n")
+
     glue(page_tpl)
 }
 
@@ -173,28 +177,10 @@ function(unit){
             filter(FALSE)
     }
     
-    
-    #;; Some computatations
-    dels_ttl <-
-        peopleDel_df %>%
-        nrow()
-    dels_in <-
-        peopleDel_df %>%
-        filter(is_checkedIn == 1) %>%
-        nrow()
-    alts_up <-
-        peopleAlt_df %>%
-        filter(is_checkedIn == 1 & is_upgraded == 1) %>%
-        nrow()
-    alts_pend <-
-        peopleAlt_df %>%
-        filter(is_checkedIn == 1 & is_upgraded == 0) %>%
-        nrow()
-    
     body_contents <-
         c(
             glue("<h1>Unit: {unit}</h1>"),
-            glue("<p>Dels ttl: {dels_ttl}, Dels In: {dels_in}, Alts Upgraded: {alts_up}, Alts Pending: {alts_pend}</p>"),
+            glue_data(getStats(people_df), tableSummary_tpl),
             glue("<h2>Delegates</h2>"),
             if (nrow(peopleDel_df)) {dbToTableUpdate(peopleDel_df)} else {""},
             glue("<h2>Alternates</h2>"),

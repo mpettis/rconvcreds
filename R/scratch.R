@@ -34,11 +34,55 @@ source(here::here("R", "libwebutils.R"))
 
 
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+getStats <- function(df) {
+    ret_lst <- list()
 
-df
-        dbReadTable(con, "people") %>%
+    ret_lst$roster_ttl <-
+        df %>%
+        nrow()
+    ret_lst$roster_present <-
+        df %>%
+        filter(is_checkedIn == 1) %>%
+        nrow()
+    ret_lst$dels_ttl <-
+        df %>%
+        filter(role %in% c("D")) %>%
+        nrow()
+    ret_lst$dpls_ttl <-
+        df %>%
+        filter(role %in% c("DPL")) %>%
+        nrow()
+    ret_lst$alts_ttl <-
+        df %>%
+        filter(role %in% c("A")) %>%
+        nrow()
+    ret_lst$floor_ttl <-
+        df %>%
+        filter((role %in% c("D", "DPL") & is_checkedIn == 1)
+               | (role %in% c("A") & is_checkedIn == 1 & is_upgraded == 1)) %>%
+        nrow()
+    ret_lst$dels_in <-
+        df %>%
+        filter(role %in% c("D") & is_checkedIn == 1) %>%
+        nrow()
+    ret_lst$dpls_in <-
+        df %>%
+        filter(role %in% c("DPL") & is_checkedIn == 1) %>%
+        nrow()
+    ret_lst$alts_up <-
+        df %>%
+        filter(role %in% c("A") & is_checkedIn == 1 & is_upgraded == 1) %>%
+        nrow()
+    ret_lst$alts_pend <-
+        df %>%
+        filter(role %in% c("A") & is_checkedIn == 1 & is_upgraded == 0) %>%
+        nrow()
 
-
-people_df <-
-    dbReadTable(con, "people") %>%
-    filter(id == .env$id)
+    ret_lst
+}
+# people_df <-
+#     dbReadTable(con, "people")
+# getStats(people_df)
+# glue_data(getStats(people_df), tableSummary_tpl)
+# people_df %>%
+#     filter(is_checkedIn == 1 & is_upgraded == 0)
