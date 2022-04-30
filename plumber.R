@@ -80,7 +80,7 @@ function(id, status){
            IN = dbExecute(con, glue("update people set is_checkedIn = 1, is_upgraded = 0 where id = {id}")),
            PEND = dbExecute(con, glue("update people set is_checkedIn = 1, is_upgraded = 0 where id = {id}")),
            UP = dbExecute(con, glue("update people set is_checkedIn = 1, is_upgraded = 1 where id = {id}")))
-    
+
     #;; Read the people db, show the updated record
     people_df <-
         dbReadTable(con, "people") %>%
@@ -155,7 +155,7 @@ function(unit){
     people_df <-
         dbReadTable(con, "people") %>%
         filter(unit == .env$unit)
-    
+
     peopleDel_df <-
         people_df %>%
         filter(role == "D") %>%
